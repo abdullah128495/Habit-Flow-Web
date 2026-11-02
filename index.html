@@ -3,22 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HabitFlow - Alışkanlık Takip</title>
+  <title>HabitFlow Pro - Alışkanlık Takip</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>HabitFlow</h1>
-      <p>Günlük Alışkanlıklarını Takip Et</p>
+      <div class="logo-area">
+        <h1>HabitFlow</h1>
+        <span class="badge-free" id="user-badge">Ücretsiz Plan</span>
+      </div>
+      <p>Günlük Alışkanlıklarını Takip Et & Serini Koruduğundan Emin Ol</p>
     </header>
 
+    <!-- İstatistik Paneli -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <span class="stat-value" id="stat-total">0</span>
+        <span class="stat-label">Toplam</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-completed">0</span>
+        <span class="stat-label">Tamamlanan</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-rate">%0</span>
+        <span class="stat-label">Başarı Oranı</span>
+      </div>
+    </div>
+
+    <!-- Form -->
     <form id="habit-form">
       <input type="text" id="habit-input" placeholder="Yeni bir alışkanlık gir (örn. Kitap oku)..." required />
       <button type="submit">Ekle</button>
     </form>
 
+    <!-- Alışkanlık Listesi -->
     <ul id="habit-list"></ul>
+  </div>
+
+  <!-- Premium Modal (Pop-up) -->
+  <div id="premium-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>🚀 Premium'a Yükselt</h2>
+      <p>Ücretsiz planda en fazla 3 alışkanlık ekleyebilirsin. Sınırsız alışkanlık eklemek ve gelişmiş grafiklere erişmek için Premium'a geç!</p>
+      <div class="price-tag">Sadece ₺49 <span>/ ömür boyu</span></div>
+      <button id="btn-upgrade" onclick="alert('Yakında ödeme altyapısı aktif olacak!')">Şimdi Premium'a Geç</button>
+      <button class="btn-close" onclick="closeModal()">Kapat</button>
+    </div>
   </div>
 
   <script src="app.js"></script>
