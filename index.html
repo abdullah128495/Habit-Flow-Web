@@ -1,55 +1,122 @@
 <!DOCTYPE html>
+
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HabitFlow Pro - Alışkanlık Takip</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body data-theme="dark">
   <div class="container">
-    <header>
-      <div class="logo-area">
-        <h1>HabitFlow</h1>
-        <span class="badge-free" id="user-badge">Ücretsiz Plan</span>
-      </div>
-      <p>Günlük Alışkanlıklarını Takip Et & Serini Koruduğundan Emin Ol</p>
-    </header>
-
-    <!-- İstatistik Paneli -->
-    <div class="stats-container">
-      <div class="stat-card">
-        <span class="stat-value" id="stat-total">0</span>
-        <span class="stat-label">Toplam</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value" id="stat-completed">0</span>
-        <span class="stat-label">Tamamlanan</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value" id="stat-rate">%0</span>
-        <span class="stat-label">Başarı Oranı</span>
+    
+    <!-- 1. GİRİŞ / KAYIT EKRANI -->
+    <div id="auth-container" class="auth-section">
+      <div id="logged-out-view">
+        <h1 class="auth-title">HabitFlow</h1>
+        <p class="auth-subtitle">Devam etmek için giriş yapın veya ücretsiz kayıt olun.</p>
+        
+        <form id="auth-form">
+          <input type="email" id="auth-email" placeholder="E-posta adresiniz" required />
+          <input type="password" id="auth-password" placeholder="Şifreniz" required />
+          <div class="auth-buttons">
+            <button type="submit" id="login-btn">Giriş Yap</button>
+            <button type="button" id="signup-btn">Kayıt Ol</button>
+          </div>
+        </form>
       </div>
     </div>
 
-    <!-- Form -->
-    <form id="habit-form">
-      <input type="text" id="habit-input" placeholder="Yeni bir alışkanlık gir (örn. Kitap oku)..." required />
-      <button type="submit">Ekle</button>
-    </form>
+    <!-- 2. HABİTFLOW ANA UYGULAMA EKRANI -->
+    <main id="app-content" style="display: none;">
+      
+      <!-- Üst Kullanıcı Barı & Çıkış & Açılır Görevler -->
+      <div class="user-header">
+        <span id="user-email-display"></span>
+        
+        <div class="dropdown-container" style="position: relative; display: inline-block;">
+          <button id="toggle-tasks-btn" class="btn-dropdown" style="background: rgba(108, 92, 231, 0.2); border: 1px solid #6c5ce7; color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            📌 Günlük Görevler ▾
+          </button>
+          
+          <div id="tasks-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; width: 300px; background: #1e1e2e; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 100;">
+            <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">Günün Otomatik Görevleri</h4>
+            <ul id="task-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;"></ul>
+          </div>
+        </div>
 
-    <!-- Alışkanlık Listesi -->
-    <ul id="habit-list"></ul>
+        <button id="logout-btn" class="btn-logout">Çıkış Yap</button>
+      </div>
+
+      <header>
+        <div class="logo-area" style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+          <h1>HabitFlow</h1>
+          <span class="badge-free" id="user-badge" style="background: linear-gradient(135deg, #f39c12, #e74c3c); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer;" onclick="openUpgradeModal()">✨ Pro'ya Geç</span>
+          <span class="badge-free" style="background: rgba(255,255,255,0.1);">Bulut Modu</span>
+        </div>
+        <p>Günlük Alışkanlıklarını Takip Et & Serini Koruduğundan Emin Ol</p>
+
+        <div class="theme-selector">
+          <span>🎨 Tema:</span>
+          <button class="theme-btn" onclick="setTheme('dark')">Koyu</button>
+          <button class="theme-btn" onclick="setTheme('light')">Açık</button>
+          <button class="theme-btn" onclick="setTheme('cyberpunk')">Cyberpunk</button>
+        </div>
+      </header>
+
+      <div class="stats-container">
+        <div class="stat-card">
+          <span class="stat-value" id="stat-total">0</span>
+          <span class="stat-label">Toplam</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="stat-completed">0</span>
+          <span class="stat-label">Tamamlanan</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="stat-rate">%0</span>
+          <span class="stat-label">Başarı Oranı</span>
+        </div>
+      </div>
+
+      <!-- Alışkanlık Ekleme Formu -->
+      <form id="habit-form">
+        <input type="text" id="habit-input" placeholder="Yeni bir alışkanlık gir..." required />
+        <select id="habit-category">
+          <option value="Sağlık">Sağlık</option>
+          <option value="Kariyer">Kariyer</option>
+          <option value="Kişisel Gelişim">Kişisel Gelişim</option>
+          <option value="Spor">Spor</option>
+        </select>
+        <select id="habit-time">
+          <option value="🌅 Sabah">🌅 Sabah</option>
+          <option value="☀️ Öğle">☀️ Öğle</option>
+          <option value="🌙 Akşam">🌙 Akşam</option>
+        </select>
+        <input type="number" id="habit-target" value="3" min="1" max="100" title="Hedef" style="width: 70px; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: #fff;" />
+        <button type="submit">Ekle</button>
+      </form>
+
+      <ul id="habit-list"></ul>
+
+    </main>
+
   </div>
 
-  <!-- Premium Modal (Pop-up) -->
-  <div id="premium-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>🚀 Premium'a Yükselt</h2>
-      <p>Ücretsiz planda en fazla 3 alışkanlık ekleyebilirsin. Sınırsız alışkanlık eklemek ve gelişmiş grafiklere erişmek için Premium'a geç!</p>
-      <div class="price-tag">Sadece ₺49 <span>/ ömür boyu</span></div>
-      <button id="btn-upgrade" onclick="alert('Yakında ödeme altyapısı aktif olacak!')">Şimdi Premium'a Geç</button>
-      <button class="btn-close" onclick="closeModal()">Kapat</button>
+  <!-- Ödeme ve Pro Yükseltme Modalı -->
+  <div id="upgrade-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: #1e1e2e; border: 1px solid rgba(255,255,255,0.15); padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+      <h2 style="color: #fff; margin-top: 0; margin-bottom: 10px;">🚀 HabitFlow Pro'ya Yükselt</h2>
+      <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 20px;">Sınırsız alışkanlık, gelişmiş istatistikler ve özel temaların kilidini aç!</p>
+      
+      <div style="background: rgba(108, 92, 231, 0.1); border: 1px solid #6c5ce7; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: left;">
+        <div style="color: #fff; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Aylık Pro Planı</div>
+        <div style="color: #a8c0ff; font-size: 1.3rem; font-weight: bold;">49.00 TL <span style="font-size: 0.8rem; font-weight: normal; opacity: 0.7;">/ ay</span></div>
+      </div>
+
+      <button onclick="simulatePayment()" style="width: 100%; padding: 12px; background: #00b894; color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-bottom: 10px;">Hemen Abone Ol (49 TL)</button>
+      <button onclick="closeUpgradeModal()" style="width: 100%; padding: 10px; background: transparent; color: rgba(255,255,255,0.6); border: none; cursor: pointer;">Vazgeç</button>
     </div>
   </div>
 
