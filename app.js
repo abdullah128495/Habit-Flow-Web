@@ -417,3 +417,32 @@ updateProUI();
 renderHabits();
 updateStats();
 renderHealthModules();
+async function syncProStatus(userId) {
+  if (!userId) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('is_pro')
+      .eq('id', userId)
+      .single();
+
+    const isPro = Boolean(data && data.is_pro);
+    localStorage.setItem('isPro', isPro ? 'true' : 'false');
+    updatePlanUI(isPro);
+  } catch (err) {
+    console.error('Pro durumu kontrol edilirken hata oluştu:', err);
+  }
+}
+
+function updatePlanUI(isPro) {
+  const planBadges = document.querySelectorAll('button, span, div');
+  planBadges.forEach((el) => {
+    if (el.children.length === 0 && el.textContent.trim() === 'Ücretsiz Plan') {
+      el.textContent = isPro ? 'Pro Plan 🌟' : 'Ücretsiz Plan';
+    }
+    if (el.textContent.includes("Pro'ya Geç")) {
+      el.style.display = isPro ? 'none' : 'inline-flex';
+    }
+  });
+}
