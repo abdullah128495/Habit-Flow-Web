@@ -409,11 +409,7 @@ function closeModal() {
 }
 
 function simulatePayment() {
-    alert('Shopier ödeme sayfasına yönlendiriliyorsunuz (Test Modu: Pro özellikler aktif edildi!).');
-    isPro = true;
-    localStorage.setItem('isPro', 'true');
-    updateProUI();
-    closeModal();
+    window.location.href = 'https://www.shopier.com/habitflowpro/52938482';
 }
 
 checkAuthStatus();
