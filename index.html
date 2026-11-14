@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -85,7 +84,6 @@
                 <span class="limit-info" id="free-limit-text">Ücretsiz Limit: 3 Görev</span>
             </div>
 
-            <!-- Açılır Kapanır Kısım -->
             <div id="tasks-dropdown-body" class="dropdown-content-area">
                 <form id="habit-form">
                     <input type="text" id="habit-input" placeholder="Yeni bir görev / alışkanlık gir (örn. Kitap oku)..." required />
@@ -112,7 +110,7 @@
             </div>
         </div>
 
-        <!-- PRO MODÜLLER: Su, Kalori ve Antrenman Takibi -->
+        <!-- PRO MODÜLLER -->
         <div class="pro-modules-section">
             <div class="section-header">
                 <h3>Pro Sağlık & Performans Modülleri</h3>
@@ -135,34 +133,67 @@
                 </div>
             </div>
 
+            <!-- Günlük Beslenme Programı -->
+            <div class="nutrition-section">
+                <div class="sub-section-title">🍽️ Günlük Beslenme Programı</div>
+                <div class="nutrition-grid">
+                    <div class="nutr-card">
+                        <span class="nutr-time">🌅 Sabah</span>
+                        <p>Yulaf, 2 Yumurta, Muz, Ceviz</p>
+                    </div>
+                    <div class="nutr-card">
+                        <span class="nutr-time">☀️ Öğle</span>
+                        <p>Tavuk Göğsü, Esmer Pirinç, Salata</p>
+                    </div>
+                    <div class="nutr-card">
+                        <span class="nutr-time">🌙 Akşam</span>
+                        <p>Somon / Yağsız Et, Sebze Yemeği</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7 Günlük Antrenman & Egzersiz Rutini -->
             <div class="workout-card">
                 <div class="workout-header">
-                    <span>🏋️ Haftalık Antrenman Serisi (Hedef: 3 Gün)</span>
-                    <strong id="workout-streak">0 / 3 Gün</strong>
+                    <span>🏋️ Haftalık Antrenman Serisi (Hedef: 7 Gün)</span>
+                    <strong id="workout-streak">0 / 7 Gün</strong>
                 </div>
                 <div class="workout-days">
-                    <button class="day-btn" onclick="toggleWorkout(0)">Antrenman 1</button>
-                    <button class="day-btn" onclick="toggleWorkout(1)">Antrenman 2</button>
-                    <button class="day-btn" onclick="toggleWorkout(2)">Antrenman 3</button>
+                    <button class="day-btn" id="day-btn-0" onclick="selectWorkoutDay(0)">Pzt</button>
+                    <button class="day-btn" id="day-btn-1" onclick="selectWorkoutDay(1)">Sal</button>
+                    <button class="day-btn" id="day-btn-2" onclick="selectWorkoutDay(2)">Çar</button>
+                    <button class="day-btn" id="day-btn-3" onclick="selectWorkoutDay(3)">Per</button>
+                    <button class="day-btn" id="day-btn-4" onclick="selectWorkoutDay(4)">Cum</button>
+                    <button class="day-btn" id="day-btn-5" onclick="selectWorkoutDay(5)">Cmt</button>
+                    <button class="day-btn" id="day-btn-6" onclick="selectWorkoutDay(6)">Paz</button>
+                </div>
+
+                <!-- Seçilen Günün Egzersiz Rutini -->
+                <div class="exercise-routine-box">
+                    <div class="routine-header-row">
+                        <span id="routine-title">Pazartesi Egzersizleri</span>
+                        <button class="btn-complete-workout" onclick="toggleCurrentWorkoutStatus()">✓ Tamamla</button>
+                    </div>
+                    <ul id="routine-exercises-list" class="routine-list"></ul>
                 </div>
             </div>
         </div>
 
         <!-- Shopier Onayı İçin Bilgilendirme -->
         <footer class="app-footer">
-            <p><strong>HabitFlow Pro Dijital Abonelik:</strong> Sınırsız alışkanlık ekleme, günlük su/kalori takibi ve haftalık antrenman seri analizlerini içeren aylık dijital yazılım hizmetidir (₺49/ay).</p>
+            <p><strong>HabitFlow Pro Dijital Abonelik:</strong> Sınırsız alışkanlık ekleme, günlük su/kalori takibi, 7 günlük kişiselleştirilmiş beslenme ve antrenman rutinlerini içeren aylık dijital yazılım hizmetidir (₺49/ay).</p>
         </footer>
 
         <!-- Premium Modal -->
         <div id="premium-modal" class="modal hidden">
             <div class="modal-content">
                 <h2>HabitFlow Pro'ya Yükselt</h2>
-                <p>Sınırsız görev ekleme, <strong>Su & Kalori Takip Modülleri</strong> ve <strong>Haftalık Antrenman Serisi</strong> özelliklerinin kilidini açın.</p>
+                <p>Sınırsız görev ekleme, <strong>Su & Kalori Modülleri</strong>, <strong>Beslenme Programı</strong> ve <strong>7 Günlük Egzersiz Rutinleri</strong> özelliklerinin kilidini açın.</p>
                 <ul class="pro-features-list">
                     <li>✓ Sınırsız Görev & Alışkanlık Ekleme</li>
                     <li>✓ Günlük Su & Kalori Hedef Takibi</li>
-                    <li>✓ Haftalık Spor & Antrenman Sayacı</li>
-                    <li>✓ Bulut Senkronizasyonu</li>
+                    <li>✓ Sabah / Öğle / Akşam Beslenme Planı</li>
+                    <li>✓ 7 Günlük Kapsamlı Egzersiz Rutinleri</li>
                 </ul>
                 <div class="price-tag">₺49 <span>/ ay</span></div>
                 <button id="btn-upgrade" onclick="simulatePayment()">Şimdi Pro'ya Geç (Shopier)</button>

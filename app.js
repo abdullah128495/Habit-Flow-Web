@@ -1,4 +1,3 @@
-
 const SUPABASE_URL = 'https://gdzxpkbgnzflqayxwcmk.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_wvrb5_VJ7tkdOVM5CAuXag_NnPSWCs_';
 
@@ -56,7 +55,74 @@ let habits = rawHabits.map(h => {
 
 let waterMl = parseInt(localStorage.getItem('waterMl')) || 0;
 let calorieKcal = parseInt(localStorage.getItem('calorieKcal')) || 0;
-let workouts = JSON.parse(localStorage.getItem('workouts')) || [false, false, false];
+let workouts = JSON.parse(localStorage.getItem('workouts')) || [false, false, false, false, false, false, false];
+let selectedWorkoutIndex = 0;
+
+// 7 Günlük Egzersiz Rutinleri
+const workoutRoutines = [
+    {
+        title: "Pazartesi: Göğüs & Triceps (İtme Günü)",
+        exercises: [
+            "Barbell Bench Press (4 Set x 10 Tekrar)",
+            "Incline Dumbbell Fly (3 Set x 12 Tekrar)",
+            "Dumbbell Pullover (3 Set x 12 Tekrar)",
+            "Triceps Pushdown (3 Set x 12 Tekrar)"
+        ]
+    },
+    {
+        title: "Salı: Sırt & Biceps (Çekme Günü)",
+        exercises: [
+            "Lat Pulldown / Barfiks (4 Set x 10 Tekrar)",
+            "Seated Cable Row (3 Set x 12 Tekrar)",
+            "Barbell Biceps Curl (3 Set x 12 Tekrar)",
+            "Hammer Curl (3 Set x 12 Tekrar)"
+        ]
+    },
+    {
+        title: "Çarşamba: Alt Vücut & Bacak",
+        exercises: [
+            "Barbell Squat / Leg Press (4 Set x 10 Tekrar)",
+            "Romanian Deadlift (3 Set x 12 Tekrar)",
+            "Walking Lunges (3 Set x 12 Adım)",
+            "Standing Calf Raise (4 Set x 15 Tekrar)"
+        ]
+    },
+    {
+        title: "Perşembe: Omuz & Karın (Core)",
+        exercises: [
+            "Military Press / Dumbbell Shoulder Press (4 Set x 10 Tekrar)",
+            "Lateral Raise (4 Set x 15 Tekrar)",
+            "Front Raise (3 Set x 12 Tekrar)",
+            "Plank & Crunch (3 Set x Max)"
+        ]
+    },
+    {
+        title: "Cuma: Tüm Vücut (Full Body)",
+        exercises: [
+            "Dumbbell Thrusters (3 Set x 10 Tekrar)",
+            "Push-ups / Şınav (3 Set x Maksimum)",
+            "Dumbbell Romanian Deadlift (3 Set x 12 Tekrar)",
+            "Dumbbell Biceps Curl to Press (3 Set x 10 Tekrar)"
+        ]
+    },
+    {
+        title: "Cumartesi: Kardiyo & Dayanıklılık",
+        exercises: [
+            "30 Dakika Tempolu Koşu / Yürüyüş",
+            "Jump Squats (3 Set x 15 Tekrar)",
+            "Mountain Climbers (3 Set x 45 Saniye)",
+            "High Knees (3 Set x 45 Saniye)"
+        ]
+    },
+    {
+        title: "Pazar: Aktif Dinlenme & Esneme",
+        exercises: [
+            "Hafif tempolu yürüyüş (Opsiyonel)",
+            "Tüm vücut esneme ve hareketlilik egzersizleri (15 dk)",
+            "Derin nefes ve dinlenme seansı"
+        ]
+    }
+];
 
 function checkAuthStatus() {
     if (!currentUser) {
@@ -111,7 +177,6 @@ function setTheme(theme) {
     }
 }
 
-// Görevler Açılır Menü Fonksiyonu
 function toggleTaskDropdown() {
     if (tasksDropdownBody.style.display === 'none' || tasksDropdownBody.style.display === '') {
         tasksDropdownBody.style.display = 'block';
@@ -190,12 +255,9 @@ function renderHabits() {
 function incrementProgress(index) {
     if (habits[index].progress < habits[index].target) {
         habits[index].progress += 1;
-        
-        // Hedefe ulaşıldıysa tebrik et ve sıfırlayarak yeni döngüye hazırla (Otomatik Yenileme)
         if (habits[index].progress >= habits[index].target) {
             habits[index].completed = true;
             showCongrats(`"${habits[index].text}" görevini başarıyla tamamladın! Yeni döngü için sayaç sıfırlandı.`);
-            // Görev tamamlandığında otomatik yenilenip tekrar baştan başlaması için:
             setTimeout(() => {
                 habits[index].progress = 0;
                 habits[index].completed = false;
@@ -225,16 +287,62 @@ function renderHealthModules() {
     document.getElementById('calorie-bar').style.width = `${caloriePercent}%`;
 
     const completedWorkouts = workouts.filter(Boolean).length;
-    document.getElementById('workout-streak').textContent = `${completedWorkouts} / 3 Gün`;
+    document.getElementById('workout-streak').textContent = `${completedWorkouts} / 7 Gün`;
 
-    const dayBtns = document.querySelectorAll('.day-btn');
-    dayBtns.forEach((btn, idx) => {
-        if (workouts[idx]) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
+    for (let i = 0; i < 7; i++) {
+        const btn = document.getElementById(`day-btn-${i}`);
+        if (btn) {
+            if (workouts[i]) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
         }
+    }
+
+    renderRoutineDisplay();
+}
+
+function selectWorkoutDay(index) {
+    selectedWorkoutIndex = index;
+    renderRoutineDisplay();
+}
+
+function renderRoutineDisplay() {
+    const routine = workoutRoutines[selectedWorkoutIndex];
+    document.getElementById('routine-title').textContent = routine.title;
+    
+    const listEl = document.getElementById('routine-exercises-list');
+    listEl.innerHTML = '';
+    routine.exercises.forEach(ex => {
+        const li = document.createElement('li');
+        li.innerHTML = `✓ ${ex}`;
+        listEl.appendChild(li);
     });
+
+    for (let i = 0; i < 7; i++) {
+        const btn = document.getElementById(`day-btn-${i}`);
+        if (btn) {
+            if (i === selectedWorkoutIndex) {
+                btn.style.borderColor = '#38bdf8';
+            } else {
+                btn.style.borderColor = '#334155';
+            }
+        }
+    }
+}
+
+function toggleCurrentWorkoutStatus() {
+    if (!isPro) {
+        openModal();
+        return;
+    }
+    workouts[selectedWorkoutIndex] = !workouts[selectedWorkoutIndex];
+    localStorage.setItem('workouts', JSON.stringify(workouts));
+    if (workouts[selectedWorkoutIndex]) {
+        showCongrats(`Tebrikler! ${workoutRoutines[selectedWorkoutIndex].title.split(':')[0]} antrenmanı tamamlandı!`);
+    }
+    renderHealthModules();
 }
 
 function addWater(amount) {
@@ -256,16 +364,6 @@ function addCalorie(amount) {
     calorieKcal += amount;
     if (calorieKcal > 4000) calorieKcal = 0;
     localStorage.setItem('calorieKcal', calorieKcal);
-    renderHealthModules();
-}
-
-function toggleWorkout(dayIndex) {
-    if (!isPro) {
-        openModal();
-        return;
-    }
-    workouts[dayIndex] = !workouts[dayIndex];
-    localStorage.setItem('workouts', JSON.stringify(workouts));
     renderHealthModules();
 }
 

@@ -17,7 +17,6 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* Tema Varyasyonları */
 body.light-theme {
     background-color: #f1f5f9;
     color: #0f172a;
@@ -30,7 +29,9 @@ body.light-theme .user-top-bar,
 body.light-theme .stat-card,
 body.light-theme .tasks-main-section,
 body.light-theme .pro-modules-section,
-body.light-theme .habit-section li {
+body.light-theme .habit-section li,
+body.light-theme .nutr-card,
+body.light-theme .exercise-routine-box {
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
     color: #1e293b;
@@ -46,7 +47,6 @@ body.cyberpunk-theme .container {
     box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
 }
 
-/* Giriş ve Tebrik Modalleri */
 .auth-modal-overlay, .modal {
     position: fixed;
     top: 0;
@@ -286,7 +286,6 @@ header p {
     color: #94a3b8;
 }
 
-/* Günlük Görevler Açılır Menü Bölümü */
 .tasks-main-section {
     background-color: #0f172a;
     padding: 1rem;
@@ -430,7 +429,7 @@ header p {
     background-color: #ef4444;
 }
 
-/* Pro Sağlık Modülleri */
+/* Pro Modüller */
 .pro-modules-section {
     background-color: #0f172a;
     padding: 1rem;
@@ -504,9 +503,50 @@ header p {
     width: 100%;
 }
 
-.workout-card {
+/* Beslenme Bölümü */
+.nutrition-section {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.sub-section-title {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.nutr-card {
     background-color: #1e293b;
     padding: 8px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.nutr-time {
+    display: block;
+    color: #38bdf8;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.nutr-card p {
+    color: #94a3b8;
+    font-size: 0.7rem;
+    line-height: 1.2;
+}
+
+/* 7 Günlük Antrenman Kartı */
+.workout-card {
+    background-color: #1e293b;
+    padding: 10px;
     border-radius: 8px;
 }
 
@@ -514,7 +554,7 @@ header p {
     display: flex;
     justify-content: space-between;
     font-size: 0.8rem;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     color: #cbd5e1;
 }
 
@@ -524,18 +564,20 @@ header p {
 
 .workout-days {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
 }
 
 .day-btn {
     background-color: #0f172a;
     color: #94a3b8;
     border: 1px solid #334155;
-    padding: 5px;
-    border-radius: 6px;
-    font-size: 0.72rem;
+    padding: 5px 2px;
+    border-radius: 4px;
+    font-size: 0.68rem;
     cursor: pointer;
+    text-align: center;
 }
 
 .day-btn.active {
@@ -543,6 +585,43 @@ header p {
     color: white;
     border-color: #10b981;
     font-weight: bold;
+}
+
+.exercise-routine-box {
+    background-color: #0f172a;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+}
+
+.routine-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    color: #38bdf8;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.btn-complete-workout {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.routine-list {
+    list-style: none;
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+
+.routine-list li {
+    margin-bottom: 3px;
 }
 
 .app-footer {
