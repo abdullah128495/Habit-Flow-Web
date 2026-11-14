@@ -45,26 +45,26 @@ body.cyberpunk-theme .container {
     border: 1px solid #00f3ff;
     box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
 }
-body.cyberpunk-theme h1 {
-    color: #00f3ff;
-    text-shadow: 0 0 8px #00f3ff;
-}
 
-/* Giriş / Kayıt Modal Stilleri */
-.auth-modal-overlay {
+/* Giriş ve Tebrik Modalleri */
+.auth-modal-overlay, .modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(15, 23, 42, 0.92);
+    background-color: rgba(15, 23, 42, 0.9);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 2000;
 }
 
-.auth-modal-content {
+.modal.hidden {
+    display: none;
+}
+
+.auth-modal-content, .modal-content {
     background-color: #1e293b;
     padding: 2rem;
     border-radius: 12px;
@@ -74,12 +74,17 @@ body.cyberpunk-theme h1 {
     border: 1px solid #334155;
 }
 
-.auth-modal-content h2 {
+.celebration-box {
+    border: 2px solid #10b981;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+}
+
+.auth-modal-content h2, .modal-content h2 {
     color: #38bdf8;
     margin-bottom: 0.5rem;
 }
 
-.auth-modal-content p {
+.auth-modal-content p, .modal-content p {
     color: #94a3b8;
     font-size: 0.85rem;
     margin-bottom: 1.2rem;
@@ -281,13 +286,29 @@ header p {
     color: #94a3b8;
 }
 
-/* Günlük Görevler Ana Bölümü */
+/* Günlük Görevler Açılır Menü Bölümü */
 .tasks-main-section {
     background-color: #0f172a;
     padding: 1rem;
     border-radius: 10px;
     border: 1px solid #334155;
     margin-bottom: 1.2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-header h3 {
+    font-size: 0.92rem;
+    color: #e2e8f0;
+}
+
+.dropdown-content-area {
+    margin-top: 10px;
+    display: block;
 }
 
 .limit-info {
@@ -300,6 +321,7 @@ header p {
     flex-direction: column;
     gap: 8px;
     margin-bottom: 1rem;
+    margin-top: 8px;
 }
 
 #habit-input {
@@ -417,18 +439,6 @@ header p {
     margin-bottom: 1rem;
 }
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.section-header h3 {
-    font-size: 0.92rem;
-    color: #e2e8f0;
-}
-
 .pro-tag {
     background-color: #f59e0b;
     color: #0f172a;
@@ -543,59 +553,6 @@ header p {
     color: #94a3b8;
     text-align: center;
     line-height: 1.4;
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.75);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal.hidden {
-    display: none;
-}
-
-.modal-content {
-    background-color: #1e293b;
-    padding: 2rem;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    border: 1px solid #334155;
-}
-
-.modal-content h2 {
-    color: #38bdf8;
-    margin-bottom: 0.8rem;
-}
-
-.modal-content p {
-    color: #94a3b8;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-}
-
-.pro-features-list {
-    list-style: none;
-    text-align: left;
-    background-color: #0f172a;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 1.2rem;
-    font-size: 0.85rem;
-    color: #e2e8f0;
-}
-
-.modal-content li {
-    margin-bottom: 6px;
 }
 
 .price-tag {

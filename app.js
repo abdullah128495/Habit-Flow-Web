@@ -1,3 +1,4 @@
+
 const SUPABASE_URL = 'https://gdzxpkbgnzflqayxwcmk.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_wvrb5_VJ7tkdOVM5CAuXag_NnPSWCs_';
 
@@ -31,6 +32,9 @@ const statCompleted = document.getElementById('stat-completed');
 const statRate = document.getElementById('stat-rate');
 const topTaskCount = document.getElementById('top-task-count');
 const freeLimitText = document.getElementById('free-limit-text');
+const congratsModal = document.getElementById('congrats-modal');
+const congratsText = document.getElementById('congrats-text');
+const tasksDropdownBody = document.getElementById('tasks-dropdown-body');
 
 const FREE_LIMIT = 3;
 let isPro = localStorage.getItem('isPro') === 'true';
@@ -107,8 +111,13 @@ function setTheme(theme) {
     }
 }
 
-function scrollToTasks() {
-    document.getElementById('tasks-section').scrollIntoView({ behavior: 'smooth' });
+// Görevler Açılır Menü Fonksiyonu
+function toggleTaskDropdown() {
+    if (tasksDropdownBody.style.display === 'none' || tasksDropdownBody.style.display === '') {
+        tasksDropdownBody.style.display = 'block';
+    } else {
+        tasksDropdownBody.style.display = 'none';
+    }
 }
 
 function updateProUI() {
@@ -181,11 +190,29 @@ function renderHabits() {
 function incrementProgress(index) {
     if (habits[index].progress < habits[index].target) {
         habits[index].progress += 1;
+        
+        // Hedefe ulaşıldıysa tebrik et ve sıfırlayarak yeni döngüye hazırla (Otomatik Yenileme)
         if (habits[index].progress >= habits[index].target) {
             habits[index].completed = true;
+            showCongrats(`"${habits[index].text}" görevini başarıyla tamamladın! Yeni döngü için sayaç sıfırlandı.`);
+            // Görev tamamlandığında otomatik yenilenip tekrar baştan başlaması için:
+            setTimeout(() => {
+                habits[index].progress = 0;
+                habits[index].completed = false;
+                saveAndRender();
+            }, 3000);
         }
         saveAndRender();
     }
+}
+
+function showCongrats(message) {
+    congratsText.textContent = message;
+    congratsModal.classList.remove('hidden');
+}
+
+function closeCongrats() {
+    congratsModal.classList.add('hidden');
 }
 
 function renderHealthModules() {
@@ -265,6 +292,7 @@ function toggleHabit(index) {
     habits[index].completed = !habits[index].completed;
     if (habits[index].completed) {
         habits[index].progress = habits[index].target;
+        showCongrats(`Tebrikler! "${habits[index].text}" görevini tamamladın.`);
     }
     saveAndRender();
 }
