@@ -15,15 +15,15 @@ export default async function handler(req, res) {
     let encodedData = null;
     let hash = null;
 
-    // 1. Shopier test bildirimleri için Multipart form-data (boundary) ayrıştırma
+    // 1. Multipart form-data ayrıştırma
     if (rawBody.includes('name="res"') || rawBody.includes('name="hash"')) {
-      const resMatch = rawBody.match(/name="res"[^\r\n]*\r?\n\r?\n([^\r\n]+)/);
-      const hashMatch = rawBody.match(/name="hash"[^\r\n]*\r?\n\r?\n([^\r\n]+)/);
-      if (resMatch) encodedData = resMatch[1].trim();
-      if (hashMatch) hash = hashMatch[1].trim();
+      const resMatch = rawBody.match(/name="res"[^]*?\r?\n\r?\n([^\r\n]+)/);
+      const hashMatch = rawBody.match(/name="hash"[^]*?\r?\n\r?\n([^\r\n]+)/);
+      if (resMatch) encodedData = resMatch[1];
+      if (hashMatch) hash = hashMatch[1];
     }
 
-    // 2. URLSearchParams (application/x-www-form-urlencoded) yedek kontrolü
+    // 2. URLSearchParams yedek kontrolü
     if (!encodedData || !hash) {
       try {
         const params = new URLSearchParams(rawBody);
@@ -45,6 +45,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'Eksik Shopier verisi' });
     }
 
+    // Base64 ve Hash metinlerindeki tüm görünmez boşluk ve satır sonlarını temizle
+    encodedData = encodedData.replace(/\s+/g, '');
+    hash = hash.replace(/\s+/g, '');
+
     const osbPassword = process.env.SHOPIER_OSB_KEY || '2ae604163dc3512234e715b1f8d92700';
     const expectedHash = crypto
       .createHmac('sha256', osbPassword)
@@ -52,7 +56,7 @@ export default async function handler(req, res) {
       .digest('hex');
 
     if (hash !== expectedHash) {
-      console.error('İmza uyuşmazlığı! Gelen:', hash, 'Beklenen:', expectedHash);
+      console.error(`İmza uyuşmazlığı! Gelen: [${hash}], Beklenen: [${expectedHash}]`);
       return res.status(401).json({ message: 'Geçersiz güvenlik imzası' });
     }
 
