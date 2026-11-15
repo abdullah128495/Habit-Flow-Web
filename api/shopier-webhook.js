@@ -6,7 +6,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { res: encodedData, hash } = req.body;
+    let encodedData, hash;
+
+    // Gelen veriyi form-urlencoded veya JSON formatından güvenli bir şekilde oku
+    if (req.body) {
+      if (typeof req.body === 'string') {
+        const params = new URLSearchParams(req.body);
+        encodedData = params.get('res');
+        hash = params.get('hash');
+      } else {
+        encodedData = req.body.res;
+        hash = req.body.hash;
+      }
+    }
+
+    // Eğer gövde henüz parse edilmediyse ham akıştan oku
+    if (!encodedData || !hash) {
+      const buffers = [];
+      for await (const chunk of req) {
+        buffers.push(chunk);
+      }
+      const rawBody = Buffer.concat(buffers).toString('utf-8');
+      const params = new URLSearchParams(rawBody);
+      encodedData = params.get('res') || encodedData;
+      hash = params.get('hash') || hash;
+    }
 
     if (!encodedData || !hash) {
       return res.status(400).json({ message: 'Eksik Shopier verisi' });
