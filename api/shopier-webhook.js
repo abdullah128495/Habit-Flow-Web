@@ -6,40 +6,36 @@ export default async function handler(req, res) {
   }
 
   try {
-    let encodedData, hash;
-
-    // Gelen veriyi ham akış (raw body) olarak güvenli bir şekilde oku
-    const buffers = [];
+    // Shopier verilerini ham akıştan (raw stream) güvenli bir şekilde oku
+    const chunks = [];
     for await (const chunk of req) {
-      buffers.push(chunk);
+      chunks.push(chunk);
     }
-    const rawBody = Buffer.concat(buffers).toString('utf-8');
+    const rawBody = Buffer.concat(chunks).toString('utf-8');
+
+    let encodedData, hash;
 
     if (rawBody) {
       const params = new URLSearchParams(rawBody);
       encodedData = params.get('res');
       hash = params.get('hash');
-      
-      // Eğer form-urlencoded değilse JSON olarak parse etmeyi dene
-      if (!encodedData && !hash) {
-        try {
-          const jsonBody = JSON.parse(rawBody);
-          encodedData = jsonBody.res;
-          hash = jsonBody.hash;
-        } catch (e) {}
-      }
     }
 
-    // Eğer hâlâ bulunamadıysa req.body nesnesine bak
+    // Yedek kontrol (req.body üzerinden)
     if ((!encodedData || !hash) && req.body) {
-      if (typeof req.body === 'object') {
-        encodedData = req.body.res;
-        hash = req.body.hash;
+      if (typeof req.body === 'string') {
+        const params = new URLSearchParams(req.body);
+        encodedData = params.get('res') || encodedData;
+        hash = params.get('hash') || hash;
+      } else if (typeof req.body === 'object') {
+        encodedData = req.body.res || encodedData;
+        hash = req.body.hash || hash;
       }
     }
 
     if (!encodedData || !hash) {
-      return res.status(400).json({ message: 'Eksik Shopier verisi', raw: rawBody });
+      console.error('Eksik Shopier verisi, rawBody:', rawBody);
+      return res.status(400).json({ message: 'Eksik Shopier verisi' });
     }
 
     const osbPassword = process.env.SHOPIER_OSB_KEY || '2ae604163dc3512234e715b1f8d92700';
@@ -49,6 +45,7 @@ export default async function handler(req, res) {
       .digest('hex');
 
     if (hash !== expectedHash) {
+      console.error('İmza uyuşmazlığı! Gelen:', hash, 'Beklenen:', expectedHash);
       return res.status(401).json({ message: 'Geçersiz güvenlik imzası' });
     }
 
@@ -83,6 +80,7 @@ export default async function handler(req, res) {
       }
     }
 
+    // Shopier'in başarılı sayması için 200 OK ve success dönüyoruz
     return res.status(200).send('success');
   } catch (error) {
     console.error('Shopier Webhook Hatası:', error);
