@@ -6,47 +6,42 @@ export default async function handler(req, res) {
   }
 
   try {
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const rawBody = Buffer.concat(chunks).toString('utf-8');
+
     let encodedData = null;
     let hash = null;
 
-    // 1. Vercel gövde ayrıştırıcı kontrolü
-    if (req.body) {
+    // 1. Shopier test bildirimleri için Multipart form-data (boundary) ayrıştırma
+    if (rawBody.includes('name="res"') || rawBody.includes('name="hash"')) {
+      const resMatch = rawBody.match(/name="res"[^\r\n]*\r?\n\r?\n([^\r\n]+)/);
+      const hashMatch = rawBody.match(/name="hash"[^\r\n]*\r?\n\r?\n([^\r\n]+)/);
+      if (resMatch) encodedData = resMatch[1].trim();
+      if (hashMatch) hash = hashMatch[1].trim();
+    }
+
+    // 2. URLSearchParams (application/x-www-form-urlencoded) yedek kontrolü
+    if (!encodedData || !hash) {
+      try {
+        const params = new URLSearchParams(rawBody);
+        encodedData = params.get('res');
+        hash = params.get('hash');
+      } catch (e) {}
+    }
+
+    // 3. req.body yedek kontrolü
+    if ((!encodedData || !hash) && req.body) {
       if (typeof req.body === 'object') {
         encodedData = req.body.res;
         hash = req.body.hash;
-      } else if (typeof req.body === 'string') {
-        const params = new URLSearchParams(req.body);
-        encodedData = params.get('res');
-        hash = params.get('hash');
-      }
-    }
-
-    // 2. Ham veri akışı (Raw Stream) yedek kontrolü
-    if (!encodedData || !hash) {
-      try {
-        const chunks = [];
-        for await (const chunk of req) {
-          chunks.push(chunk);
-        }
-        const rawBody = Buffer.concat(chunks).toString('utf-8');
-        if (rawBody) {
-          const params = new URLSearchParams(rawBody);
-          encodedData = params.get('res');
-          hash = params.get('hash');
-          
-          if (!encodedData || !hash) {
-            const parsed = JSON.parse(rawBody);
-            encodedData = parsed.res;
-            hash = parsed.hash;
-          }
-        }
-      } catch (err) {
-        // Akış okunamazsa yoksay
       }
     }
 
     if (!encodedData || !hash) {
-      console.error('Eksik Shopier verisi. req.body:', req.body);
+      console.error('Eksik Shopier verisi, rawBody:', rawBody);
       return res.status(400).json({ message: 'Eksik Shopier verisi' });
     }
 
@@ -57,7 +52,7 @@ export default async function handler(req, res) {
       .digest('hex');
 
     if (hash !== expectedHash) {
-      console.error('İmza uyuşmazlığı!');
+      console.error('İmza uyuşmazlığı! Gelen:', hash, 'Beklenen:', expectedHash);
       return res.status(401).json({ message: 'Geçersiz güvenlik imzası' });
     }
 
