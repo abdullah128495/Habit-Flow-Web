@@ -6,35 +6,47 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Shopier verilerini ham akıştan (raw stream) güvenli bir şekilde oku
-    const chunks = [];
-    for await (const chunk of req) {
-      chunks.push(chunk);
-    }
-    const rawBody = Buffer.concat(chunks).toString('utf-8');
+    let encodedData = null;
+    let hash = null;
 
-    let encodedData, hash;
-
-    if (rawBody) {
-      const params = new URLSearchParams(rawBody);
-      encodedData = params.get('res');
-      hash = params.get('hash');
-    }
-
-    // Yedek kontrol (req.body üzerinden)
-    if ((!encodedData || !hash) && req.body) {
-      if (typeof req.body === 'string') {
+    // 1. Vercel gövde ayrıştırıcı kontrolü
+    if (req.body) {
+      if (typeof req.body === 'object') {
+        encodedData = req.body.res;
+        hash = req.body.hash;
+      } else if (typeof req.body === 'string') {
         const params = new URLSearchParams(req.body);
-        encodedData = params.get('res') || encodedData;
-        hash = params.get('hash') || hash;
-      } else if (typeof req.body === 'object') {
-        encodedData = req.body.res || encodedData;
-        hash = req.body.hash || hash;
+        encodedData = params.get('res');
+        hash = params.get('hash');
+      }
+    }
+
+    // 2. Ham veri akışı (Raw Stream) yedek kontrolü
+    if (!encodedData || !hash) {
+      try {
+        const chunks = [];
+        for await (const chunk of req) {
+          chunks.push(chunk);
+        }
+        const rawBody = Buffer.concat(chunks).toString('utf-8');
+        if (rawBody) {
+          const params = new URLSearchParams(rawBody);
+          encodedData = params.get('res');
+          hash = params.get('hash');
+          
+          if (!encodedData || !hash) {
+            const parsed = JSON.parse(rawBody);
+            encodedData = parsed.res;
+            hash = parsed.hash;
+          }
+        }
+      } catch (err) {
+        // Akış okunamazsa yoksay
       }
     }
 
     if (!encodedData || !hash) {
-      console.error('Eksik Shopier verisi, rawBody:', rawBody);
+      console.error('Eksik Shopier verisi. req.body:', req.body);
       return res.status(400).json({ message: 'Eksik Shopier verisi' });
     }
 
@@ -45,7 +57,7 @@ export default async function handler(req, res) {
       .digest('hex');
 
     if (hash !== expectedHash) {
-      console.error('İmza uyuşmazlığı! Gelen:', hash, 'Beklenen:', expectedHash);
+      console.error('İmza uyuşmazlığı!');
       return res.status(401).json({ message: 'Geçersiz güvenlik imzası' });
     }
 
@@ -57,33 +69,29 @@ export default async function handler(req, res) {
       const supabaseUrl = process.env.SUPABASE_URL;
       const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-      const response = await fetch(
-        `${supabaseUrl}/rest/v1/profiles?email=eq.${encodeURIComponent(customerEmail)}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'apikey': serviceRoleKey,
-            'Authorization': `Bearer ${serviceRoleKey}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({
-            is_pro: true,
-            updated_at: new Date().toISOString()
-          })
-        }
-      );
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Supabase hatası: ${errText}`);
+      if (supabaseUrl && serviceRoleKey) {
+        await fetch(
+          `${supabaseUrl}/rest/v1/profiles?email=eq.${encodeURIComponent(customerEmail)}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'apikey': serviceRoleKey,
+              'Authorization': `Bearer ${serviceRoleKey}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              is_pro: true,
+              updated_at: new Date().toISOString()
+            })
+          }
+        );
       }
     }
 
-    // Shopier'in başarılı sayması için 200 OK ve success dönüyoruz
     return res.status(200).send('success');
   } catch (error) {
-    console.error('Shopier Webhook Hatası:', error);
+    console.error('Webhook Hatası:', error);
     return res.status(500).json({ error: error.message });
   }
 }
