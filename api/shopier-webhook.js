@@ -8,32 +8,38 @@ export default async function handler(req, res) {
   try {
     let encodedData, hash;
 
-    // Gelen veriyi form-urlencoded veya JSON formatından güvenli bir şekilde oku
-    if (req.body) {
-      if (typeof req.body === 'string') {
-        const params = new URLSearchParams(req.body);
-        encodedData = params.get('res');
-        hash = params.get('hash');
-      } else {
+    // Gelen veriyi ham akış (raw body) olarak güvenli bir şekilde oku
+    const buffers = [];
+    for await (const chunk of req) {
+      buffers.push(chunk);
+    }
+    const rawBody = Buffer.concat(buffers).toString('utf-8');
+
+    if (rawBody) {
+      const params = new URLSearchParams(rawBody);
+      encodedData = params.get('res');
+      hash = params.get('hash');
+      
+      // Eğer form-urlencoded değilse JSON olarak parse etmeyi dene
+      if (!encodedData && !hash) {
+        try {
+          const jsonBody = JSON.parse(rawBody);
+          encodedData = jsonBody.res;
+          hash = jsonBody.hash;
+        } catch (e) {}
+      }
+    }
+
+    // Eğer hâlâ bulunamadıysa req.body nesnesine bak
+    if ((!encodedData || !hash) && req.body) {
+      if (typeof req.body === 'object') {
         encodedData = req.body.res;
         hash = req.body.hash;
       }
     }
 
-    // Eğer gövde henüz parse edilmediyse ham akıştan oku
     if (!encodedData || !hash) {
-      const buffers = [];
-      for await (const chunk of req) {
-        buffers.push(chunk);
-      }
-      const rawBody = Buffer.concat(buffers).toString('utf-8');
-      const params = new URLSearchParams(rawBody);
-      encodedData = params.get('res') || encodedData;
-      hash = params.get('hash') || hash;
-    }
-
-    if (!encodedData || !hash) {
-      return res.status(400).json({ message: 'Eksik Shopier verisi' });
+      return res.status(400).json({ message: 'Eksik Shopier verisi', raw: rawBody });
     }
 
     const osbPassword = process.env.SHOPIER_OSB_KEY || '2ae604163dc3512234e715b1f8d92700';
